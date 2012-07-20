@@ -1,0 +1,7 @@
+//
+// Prefix header for all source files of the 'QueueWithWidth' target in the 'QueueWithWidth' project
+//
+
+#ifdef __OBJC__
+	#import <Foundation/Foundation.h>
+#endif

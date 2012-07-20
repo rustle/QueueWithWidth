@@ -1,0 +1,1 @@
+Functional implementation of a dispatch_queue_t that manages it's own width and an outline of why I think this should be supported by official API
