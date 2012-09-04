@@ -1,0 +1,3 @@
+[submodule "QueueWithWidth/ARCLogic"]
+	path = QueueWithWidth/ARCLogic
+	url = https://github.com/rustle/ARCLogic.git

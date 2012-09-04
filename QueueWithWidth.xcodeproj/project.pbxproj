@@ -27,6 +27,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		9129B27915F6746900AEF7EF /* dispatch_proposal.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = dispatch_proposal.m; sourceTree = "<group>"; };
+		9129B27C15F675EA00AEF7EF /* ARCLogic.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARCLogic.h; path = ARCLogic/ARCLogic.h; sourceTree = "<group>"; };
+		9129B27D15F6769A00AEF7EF /* dispatch_proposal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dispatch_proposal.h; sourceTree = "<group>"; };
 		91F6344E15B79119000B8D84 /* QueueWithWidth */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = QueueWithWidth; sourceTree = BUILT_PRODUCTS_DIR; };
 		91F6345215B79119000B8D84 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		91F6345515B79119000B8D84 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -79,6 +82,8 @@
 				91F6345515B79119000B8D84 /* main.m */,
 				91F6346715B7A9C4000B8D84 /* es_dispatch.h */,
 				91F6346815B7A9C4000B8D84 /* es_dispatch.m */,
+				9129B27D15F6769A00AEF7EF /* dispatch_proposal.h */,
+				9129B27915F6746900AEF7EF /* dispatch_proposal.m */,
 				91F6345915B79119000B8D84 /* QueueWithWidth.1 */,
 				91F6345715B79119000B8D84 /* Supporting Files */,
 			);
@@ -88,6 +93,7 @@
 		91F6345715B79119000B8D84 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				9129B27C15F675EA00AEF7EF /* ARCLogic.h */,
 				91F6345815B79119000B8D84 /* QueueWithWidth-Prefix.pch */,
 			);
 			name = "Supporting Files";
@@ -152,7 +158,7 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		91F6345B15B79119000B8D84 /* Debug */ = {
+		9129B27E15F6772200AEF7EF /* Debug 10.8 ARC */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -174,11 +180,125 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 			};
-			name = Debug;
+			name = "Debug 10.8 ARC";
+		};
+		9129B27F15F6772200AEF7EF /* Debug 10.8 ARC */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "QueueWithWidth/QueueWithWidth-Prefix.pch";
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = "Debug 10.8 ARC";
+		};
+		9129B28015F6772300AEF7EF /* Debug 10.7 ARC */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = "Debug 10.7 ARC";
+		};
+		9129B28115F6772300AEF7EF /* Debug 10.7 ARC */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "QueueWithWidth/QueueWithWidth-Prefix.pch";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = "Debug 10.7 ARC";
+		};
+		9129B28215F6772500AEF7EF /* Debug 10.8 */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = "Debug 10.8";
+		};
+		9129B28315F6772500AEF7EF /* Debug 10.8 */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = NO;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "QueueWithWidth/QueueWithWidth-Prefix.pch";
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = "Debug 10.8";
+		};
+		91F6345B15B79119000B8D84 /* Debug 10.7 */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = "Debug 10.7";
 		};
 		91F6345C15B79119000B8D84 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -196,19 +316,20 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				SDKROOT = macosx;
 			};
 			name = Release;
 		};
-		91F6345E15B79119000B8D84 /* Debug */ = {
+		91F6345E15B79119000B8D84 /* Debug 10.7 */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "QueueWithWidth/QueueWithWidth-Prefix.pch";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
-			name = Debug;
+			name = "Debug 10.7";
 		};
 		91F6345F15B79119000B8D84 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -225,7 +346,10 @@
 		91F6344815B79119000B8D84 /* Build configuration list for PBXProject "QueueWithWidth" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				91F6345B15B79119000B8D84 /* Debug */,
+				91F6345B15B79119000B8D84 /* Debug 10.7 */,
+				9129B28215F6772500AEF7EF /* Debug 10.8 */,
+				9129B28015F6772300AEF7EF /* Debug 10.7 ARC */,
+				9129B27E15F6772200AEF7EF /* Debug 10.8 ARC */,
 				91F6345C15B79119000B8D84 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -234,7 +358,10 @@
 		91F6345D15B79119000B8D84 /* Build configuration list for PBXNativeTarget "QueueWithWidth" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				91F6345E15B79119000B8D84 /* Debug */,
+				91F6345E15B79119000B8D84 /* Debug 10.7 */,
+				9129B28315F6772500AEF7EF /* Debug 10.8 */,
+				9129B28115F6772300AEF7EF /* Debug 10.7 ARC */,
+				9129B27F15F6772200AEF7EF /* Debug 10.8 ARC */,
 				91F6345F15B79119000B8D84 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;

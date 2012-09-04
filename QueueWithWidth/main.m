@@ -20,11 +20,10 @@
 
 #import <Foundation/Foundation.h>
 #import "es_dispatch.h"
+#import "ARCLogic.h"
 
 // The first and second examples demonstrate the same exact logical flow,
-// except that the first uses associated objects
-// to hide away all the messiness (not that associated objects are the
-// cleanest thing)
+// except that the first uses a queue context to hide away all the messiness
 
 // Background reading http://www.mikeash.com/pyblog/friday-qa-2009-09-25-gcd-practicum.html
 
@@ -39,37 +38,40 @@ int main(int argc, const char * argv[])
 #if 1
 		
 		NSLog(@"Start");
-		dispatch_queue_t queue = es_queue_create(NULL, [[NSProcessInfo processInfo] processorCount]);
+		dispatch_queue_t queue = es_queue_create(NULL, [[NSProcessInfo processInfo] processorCount] * 2);
 		for (int i = 0; i < 20; i++)
 		{
 			es_async(queue, ^{
-				sleep(4);
+				sleep(2);
 				NSLog(@"%d", i);
 			});
 		}
 		es_queue_notify(queue, ^{
 			NSLog(@"Done");
-			exit(0);
+			es_dispatch_release(queue);
 		});
+		
 		dispatch_main();
 		
 #else
 		
 		dispatch_queue_t queue = dispatch_queue_create(NULL, DISPATCH_QUEUE_CONCURRENT);
-		dispatch_semaphore_t semaphore = dispatch_semaphore_create([[NSProcessInfo processInfo] processorCount]);
+		dispatch_semaphore_t semaphore = dispatch_semaphore_create([[NSProcessInfo processInfo] processorCount] * 2);
 		dispatch_group_t group = dispatch_group_create();
 		for (int i = 0; i < 20; i++)
 		{
 			dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
 			dispatch_group_async(group, queue, ^{
-				sleep(4);
+				sleep(2);
 				NSLog(@"%d", i);
 				dispatch_semaphore_signal(semaphore);
 			});
 		}
 		dispatch_group_notify(group, queue, ^{
 			NSLog(@"Done");
-			exit(0);
+			es_dispatch_release(queue);
+			es_dispatch_release(semaphore);
+			es_dispatch_release(group);
 		});
 		dispatch_main();
 		
@@ -77,4 +79,3 @@ int main(int argc, const char * argv[])
 	}
     return 0;
 }
-

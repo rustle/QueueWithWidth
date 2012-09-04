@@ -19,35 +19,79 @@
 //
 
 #import "es_dispatch.h"
-#import <objc/runtime.h>
+#import "ARCLogic.h"
 
-static const void * sync_queue_key = &sync_queue_key;
-static const void * semaphore_key = &semaphore_key;
-static const void * group_key = &group_key;
+static const void * es_queue_context_key = "es_queue_context_key";
+
+@interface ESQueueContext : NSObject
+
+- (instancetype)initWithWidth:(long)width;
+- (dispatch_queue_t)syncQueue;
+- (dispatch_semaphore_t)semaphore;
+- (dispatch_group_t)group;
+
+@end
+
+static void es_queue_finalizer(void *context)
+{
+	CFRelease((CFTypeRef)context);
+}
+
+static ESQueueContext * es_lookup_context(dispatch_queue_t queue)
+{
+	ESQueueContext *context;
+	IF_ARC(
+		   context = (__bridge ESQueueContext *)dispatch_queue_get_specific(queue, es_queue_context_key);
+		   ,
+		   context = (ESQueueContext *)dispatch_queue_get_specific(queue, es_queue_context_key);
+		   )
+	return context;
+}
 
 dispatch_queue_t es_queue_create(const char *label, long width)
 {
+	if (width <= 0)
+	{
+		NSLog(@"Attempted to create a dispatch queue with a width of zero or less");
+		return NULL;
+	}
 	dispatch_queue_t queue = dispatch_queue_create(label, DISPATCH_QUEUE_CONCURRENT);
-    dispatch_queue_t syncQueue = dispatch_queue_create("", DISPATCH_QUEUE_SERIAL);
-    objc_setAssociatedObject(queue, sync_queue_key, syncQueue, OBJC_ASSOCIATION_RETAIN);
-	dispatch_semaphore_t semaphore = dispatch_semaphore_create(width);
-	objc_setAssociatedObject(queue, semaphore_key, semaphore, OBJC_ASSOCIATION_RETAIN);
-    dispatch_group_t group = dispatch_group_create();
-    objc_setAssociatedObject(queue, group_key, group, OBJC_ASSOCIATION_RETAIN);
+	ESQueueContext *context = [[ESQueueContext alloc] initWithWidth:width];
+	void * contextRef;
+	IF_ARC(
+		   contextRef = (void *)CFBridgingRetain(context);
+		   ,
+		   contextRef = (void *)context;
+		   )
+	dispatch_queue_set_specific(queue, es_queue_context_key, contextRef, &es_queue_finalizer);
 	return queue;
 }
 
-void es_async(dispatch_queue_t queue, dispatch_block_t block)
+#define _es_dispatch_func_preflight \
+if (queue == NULL) \
+{ \
+NSLog(@"Attempted to schedule a block on a NULL queue"); \
+return; \
+} \
+if (block == NULL) \
+{ \
+NSLog(@"Attempted to schedule a NULL block"); \
+return; \
+}
+
+void _es_dispatch_async_func(dispatch_queue_t queue, dispatch_block_t block, void (*async_func)(dispatch_queue_t queue, dispatch_block_t block))
 {
-	dispatch_queue_t syncQueue = objc_getAssociatedObject(queue, sync_queue_key);
-	dispatch_semaphore_t semaphore = objc_getAssociatedObject(queue, semaphore_key);
-	dispatch_group_t group = objc_getAssociatedObject(queue, group_key);
+	_es_dispatch_func_preflight
+	ESQueueContext *context = es_lookup_context(queue);
+	dispatch_queue_t syncQueue = context.syncQueue;
+	dispatch_semaphore_t semaphore = context.semaphore;
+	dispatch_group_t group = context.group;
 	if (semaphore && syncQueue && group)
     {
 		dispatch_group_enter(group);
         dispatch_async(syncQueue, ^{
             dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
-            dispatch_async(queue, ^ {
+            async_func(queue, ^ {
                 block();
                 dispatch_semaphore_signal(semaphore);
                 dispatch_group_leave(group);
@@ -56,75 +100,113 @@ void es_async(dispatch_queue_t queue, dispatch_block_t block)
     }
     else
     {
-        dispatch_async(queue, block);
+        async_func(queue, block);
     }
+}
+
+void _es_dispatch_sync_func(dispatch_queue_t queue, dispatch_block_t block, void (*sync_func)(dispatch_queue_t queue, dispatch_block_t block))
+{
+	_es_dispatch_func_preflight
+	ESQueueContext *context = es_lookup_context(queue);
+	dispatch_semaphore_t semaphore = context.semaphore;
+	dispatch_group_t group = context.group;
+	if (semaphore && group)
+    {
+		dispatch_group_enter(group);
+        dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+		sync_func(queue, ^ {
+			block();
+			dispatch_semaphore_signal(semaphore);
+			dispatch_group_leave(group);
+		});
+    }
+    else
+    {
+        sync_func(queue, block);
+    }
+}
+
+void es_async(dispatch_queue_t queue, dispatch_block_t block)
+{
+	_es_dispatch_async_func(queue, block, &dispatch_async);
+}
+
+void es_sync(dispatch_queue_t queue, dispatch_block_t block)
+{
+	_es_dispatch_sync_func(queue, block, &dispatch_sync);
+}
+
+void es_barrier_async(dispatch_queue_t queue, dispatch_block_t block)
+{
+	_es_dispatch_async_func(queue, block, &dispatch_barrier_async);
+}
+
+void es_barrier_sync(dispatch_queue_t queue, dispatch_block_t block)
+{
+	_es_dispatch_sync_func(queue, block, &dispatch_barrier_sync);
 }
 
 long es_queue_wait(dispatch_queue_t queue, dispatch_time_t timeout)
 {
-	dispatch_group_t group = objc_getAssociatedObject(queue, group_key);
+	if (queue == NULL)
+	{
+		NSLog(@"Attempted to wait on a NULL queue");
+		return 0;
+	}
+	ESQueueContext *context = es_lookup_context(queue);
+	dispatch_group_t group = context.group;
 	if (group) return dispatch_group_wait(group, timeout);
 	return 0;
 }
 
 void es_queue_notify(dispatch_queue_t queue, dispatch_block_t block)
 {
-	dispatch_group_t group = objc_getAssociatedObject(queue, group_key);
+	if (queue == NULL)
+	{
+		NSLog(@"Attempted to schedule a notify block on a NULL queue");
+		return;
+	}
+	if (block == NULL)
+	{
+		NSLog(@"Attempted to schedule a NULL notify block");
+		return;
+	}
+	ESQueueContext *context = es_lookup_context(queue);
+	dispatch_group_t group = context.group;
 	if (group) return dispatch_group_notify(group, queue, block);
 }
 
-// Rough idea of how I would implement the real API
-
-// Assumes there's a dispatch_semapahore_t dsem member variable
-// on the dispatch_queue_t struct
-
-void
-dispatch_set_queue_width(dispatch_queue_t queue, long width)
+@implementation ESQueueContext
 {
-	// clear existing semaphore on queue
-	dispatch_semaphore_t dsem;
-	dsem = dispatch_semaphore_create(width);
-	// associate it with queue
+	dispatch_queue_t _syncQueue;
+	dispatch_semaphore_t _semaphore;
+	dispatch_group_t _group;
 }
 
-long
-dispatch_queue_wait(dispatch_queue_t queue, dispatch_time_t timeout)
+- (instancetype)initWithWidth:(long)width
 {
-	dispatch_semaphore_t dsem; // get dsem off queue
-	return dispatch_semaphore_wait(dsem, timeout);
+	self = [super init];
+	if (self)
+	{
+		_syncQueue = dispatch_queue_create("", DISPATCH_QUEUE_SERIAL);
+		_semaphore = dispatch_semaphore_create(width);
+		_group = dispatch_group_create();
+	}
+	return self;
 }
 
-void
-dispatch_queue_notify(dispatch_queue_t queue,
-					  dispatch_block_t block)
+- (dispatch_queue_t)syncQueue { return _syncQueue; }
+
+- (dispatch_semaphore_t)semaphore { return _semaphore; }
+
+- (dispatch_group_t)group { return _group; }
+
+- (void)dealloc
 {
-	dispatch_semaphore_t dsem; // get dsem off queue
-	dispatch_semaphore_notify(dsem, block);
+	es_dispatch_release(_syncQueue);
+	es_dispatch_release(_semaphore);
+	es_dispatch_release(_group);
+	NO_ARC([super dealloc];)
 }
 
-void
-dispatch_semaphore_notify(dispatch_semaphore_t semaphore,
-						  dispatch_block_t block)
-{
-	// Same basic implementation as
-	// dispatch_group_notify
-	// but instead of value==origvalue
-	// use value >= 0
-	// dispatch_semaphore_signal() would need to
-	// consider to consider these notify blocks
-	// in the same way it considers semaphores
-	// waiting in dispatch_semaphore_wait()
-}
-
-void
-dispatch_async(dispatch_queue_t queue, dispatch_block_t block)
-{
-	/*
-	 Normal dispatch_async for serial and concurrent queues
-	 */
-	// If DISPATCH_QUEUE_CONCURRENT_WITH_WIDTH
-	dispatch_semaphore_t dsem; // get dsem off queue
-	dispatch_semaphore_notify(dsem, ^{
-		dispatch_async(queue, block);
-	});
-}
+@end
